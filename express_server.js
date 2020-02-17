@@ -1,6 +1,21 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
+function generateRandomString(){
+    let randomStr = "";
+    let arrayCharsAndNums = ['A', 'B', 'C' , 'D', 'E', 'F', 'G', 'H', 'a', 'b', 'c', 'd', 'e', 'f', '1', '2', '3', '4', '5', '6', '7'];
+    for(let i = 0; i < 6;  i++){
+       randomStr += arrayCharsAndNums[Math.floor((Math.random() * (arrayCharsAndNums.length  - 1)))];
+    }
+    return randomStr;
+}
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
+
+app.post('/urls', (req, res) => {
+    console.log(req.body);
+    res.send("ok");
+});
 
 app.set('view engine', 'ejs');
 
@@ -8,6 +23,10 @@ const urlDatabase = {
     'b2xVn2': 'www.lighthouselabs.ca',
     '9sm5xK': 'www.google.ca'
 }
+
+app.get('/urls/new', (req, res) => {
+    res.render('urls_new')
+});
 // app.get('/urls', (req, res) => {
 //     let templateUrl = {urls: urlDatabase}
 //     res.render('urls_index', templateUrl);
