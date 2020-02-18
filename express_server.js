@@ -40,11 +40,15 @@ app.post('/urls/:shortURL/delete', (req, res) => {
     res.redirect('/urls');
 });
 
-
-app.get('/u/:shortURL', (req, res) => {
+app.get('/urls/:shortURL', (req, res) => {
     let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
-    res.redirect(templateVar.longURL);
+    res.render('urls_show', templateVar);
 });
+
+// app.get('/urls/:shortURL', (req, res) => {
+//     let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
+//     res.redirect(templateVar.longURL);
+// });
 
 app.listen(PORT, () => {
     console.log(`App is listening on port: ${PORT}`);
