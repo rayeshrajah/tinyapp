@@ -17,21 +17,30 @@ const urlDatabase = {
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
-app.post('/urls', (req, res) => {
-   let shUrl = generateRandomString()
-   urlDatabase[shUrl] = req.body.longURL
-   res.redirect(`/urls/${shUrl}`);
-});
+// app.post('/urls', (req, res) => {
+//    let shUrl = generateRandomString()
+//    urlDatabase[shUrl] = req.body.longURL
+//    res.redirect(`/urls/${shUrl}`);
+// });
 
 app.set('view engine', 'ejs');
 
 app.get('/urls/new', (req, res) => {
     res.render('urls_new')
 });
-// app.get('/urls', (req, res) => {
-//     let templateUrl = {urls: urlDatabase}
-//     res.render('urls_index', templateUrl);
-// });
+//gets the /urls and renders the urls_index.ejs file from views
+ app.get('/urls', (req, res) => {
+    let templateUrl = {urls: urlDatabase}
+    res.render('urls_index', templateUrl); });
+
+app.post('/urls/:shortURL/delete', (req, res) => {
+    console.log(urlDatabase);
+    console.log(urlDatabase.shortURL);
+    delete urlDatabase[req.params.shortURL];
+    res.redirect('/urls');
+});
+
+
 app.get('/u/:shortURL', (req, res) => {
     let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
     res.redirect(templateVar.longURL);
