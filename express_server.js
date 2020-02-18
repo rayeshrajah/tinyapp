@@ -9,20 +9,21 @@ function generateRandomString(){
     }
     return randomStr;
 }
+
+const urlDatabase = {
+    'b2xVn2': 'http://www.lighthouselabs.ca',
+    '9sm5xK': 'http://www.google.ca'
+}
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
 app.post('/urls', (req, res) => {
-    console.log(req.body);
-    res.send("ok");
+   let shUrl = generateRandomString()
+   urlDatabase[shUrl] = req.body.longURL
+   res.redirect(`/urls/${shUrl}`);
 });
 
 app.set('view engine', 'ejs');
-
-const urlDatabase = {
-    'b2xVn2': 'www.lighthouselabs.ca',
-    '9sm5xK': 'www.google.ca'
-}
 
 app.get('/urls/new', (req, res) => {
     res.render('urls_new')
@@ -31,9 +32,9 @@ app.get('/urls/new', (req, res) => {
 //     let templateUrl = {urls: urlDatabase}
 //     res.render('urls_index', templateUrl);
 // });
-app.get(`/urls/:shortURL`, (req, res) => {
+app.get('/u/:shortURL', (req, res) => {
     let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
-    res.render('urls_show.ejs', templateVar);
+    res.redirect(templateVar.longURL);
 });
 
 app.listen(PORT, () => {
