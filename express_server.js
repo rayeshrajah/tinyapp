@@ -9,20 +9,20 @@ function generateRandomString(){
     }
     return randomStr;
 }
+const body = require("body-parser");
+app.use(body.urlencoded({extended: true}));
 
 const urlDatabase = {
     'b2xVn2': 'http://www.lighthouselabs.ca',
     '9sm5xK': 'http://www.google.ca'
 }
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
+
 
 // app.post('/urls', (req, res) => {
 //    let shUrl = generateRandomString()
 //    urlDatabase[shUrl] = req.body.longURL
 //    res.redirect(`/urls/${shUrl}`);
 // });
-
 app.set('view engine', 'ejs');
 
 app.get('/urls/new', (req, res) => {
@@ -34,11 +34,21 @@ app.get('/urls/new', (req, res) => {
     res.render('urls_index', templateUrl); });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-    console.log(urlDatabase);
-    console.log(urlDatabase.shortURL);
     delete urlDatabase[req.params.shortURL];
     res.redirect('/urls');
 });
+//Bring you to the correct editing Url page dpending on which one you want to edit.
+app.post('/urls/:shortURL/pageEdit', (req, res) => {
+    const stURL = req.params.shortURL
+    res.redirect(`/urls/${stURL}`);
+});
+
+app.post('/urls/:shortURL/edit', (req, res) => {
+    const shrtURL = req.params.shortURL;
+    const newLongURL = req.body[shrtURL];
+    urlDatabase[shrtURL] = newLongURL;
+    res.redirect(`/urls`);
+})
 
 app.get('/urls/:shortURL', (req, res) => {
     let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}

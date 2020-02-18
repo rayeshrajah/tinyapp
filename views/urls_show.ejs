@@ -21,9 +21,9 @@
         <div class="card text-center">
             <div class="card-header">
                 <h2>Edit</h2>
-                <form action="POST" action="">
+                <form method="POST" action="/urls/<%=shortURL%>/edit">
                     <label for="newURL">Enter new URL:</label>
-                    <input type="text" id="newURL" placeholder= "<%=longURL %>">
+                    <input type="text" id="something" name= "<%=shortURL%>"  placeholder= "<%=longURL %>">
                     <button class="btn btn-primary">Submit</button>
                 </form>
             </div>
