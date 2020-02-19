@@ -1,6 +1,11 @@
 const express = require('express');
 const app = express();
 const PORT = 8080;
+const body = require("body-parser");
+const cookieParser = require("cookie-parser")
+app.use(cookieParser());
+app.use(body.urlencoded({extended: true}));
+
 function generateRandomString(){
     let randomStr = "";
     let arrayCharsAndNums = ['A', 'B', 'C' , 'D', 'E', 'F', 'G', 'H', 'a', 'b', 'c', 'd', 'e', 'f', '1', '2', '3', '4', '5', '6', '7'];
@@ -9,16 +14,15 @@ function generateRandomString(){
     }
     return randomStr;
 }
-const body = require("body-parser");
-const cookieParser = require("cookie-parser")
-app.use(cookieParser());
-app.use(body.urlencoded({extended: true}));
 
 const urlDatabase = {
     'b2xVn2': 'http://www.lighthouselabs.ca',
     '9sm5xK': 'http://www.google.ca'
 }
 
+const user = {
+
+}
 
 // app.post('/urls', (req, res) => {
 //    let shUrl = generateRandomString()
@@ -31,8 +35,20 @@ app.get('/urls/new', (req, res) => {
     res.render('urls_new')
 });
 
+
+
 const getTemplateVars = (req) => 
 req.cookies['username'];
+
+//renders the registration page
+app.get('/register', (req, res) => {
+    res.render('urls_register');
+});
+
+app.post('/register', (req, res) => {
+    const randomId = generateRandomString();
+    const {email, password} = 
+});
 //gets the /urls and renders the urls_index.ejs file from views
  app.get('/urls', (req, res) => {
     let templateUrl = {username: getTemplateVars(req),urls: urlDatabase}
