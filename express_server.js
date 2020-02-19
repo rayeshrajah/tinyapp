@@ -44,7 +44,7 @@ req.cookies['username'];
 app.get('/register', (req, res) => {
     res.render('urls_register');
 });
-//After the user clicks the login in the registration page
+//After the user clicks the login in the registration page redirects them to the urls page.
 app.post('/register', (req, res) => {
     const randomId = generateRandomString();
     const email = req.body['email'];
@@ -55,8 +55,8 @@ app.post('/register', (req, res) => {
         'email': email,
         'password': password
     }
-    console.log(usersDatabase);
-
+    res.cookie('userID', usersDatabase[randomId].userID);
+    res.redirect('/urls')
 });
 //gets the /urls and renders the urls_index.ejs file from views
  app.get('/urls', (req, res) => {
