@@ -10,6 +10,8 @@ function generateRandomString(){
     return randomStr;
 }
 const body = require("body-parser");
+const cookieParser = require("cookie-parser")
+app.use(cookieParser());
 app.use(body.urlencoded({extended: true}));
 
 const urlDatabase = {
@@ -28,9 +30,12 @@ app.set('view engine', 'ejs');
 app.get('/urls/new', (req, res) => {
     res.render('urls_new')
 });
+
+const getTemplateVars = (req) => 
+req.cookies['username'];
 //gets the /urls and renders the urls_index.ejs file from views
  app.get('/urls', (req, res) => {
-    let templateUrl = {urls: urlDatabase}
+    let templateUrl = {username: getTemplateVars(req),urls: urlDatabase}
     res.render('urls_index', templateUrl); });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
@@ -51,10 +56,21 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 })
 
 app.get('/urls/:shortURL', (req, res) => {
-    let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
+    let templateVar = {username: getTemplateVars(req), shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
     res.render('urls_show', templateVar);
 });
 
+
+app.post('/login', (req, res) => {
+   const name = req.body.username;
+   res.cookie('username', name);
+   res.redirect('/urls');
+});
+
+app.post('/logout', (req, res) => {
+    res.clearCookie('username', getTemplateVars(req));
+    res.redirect('/urls');
+});
 // app.get('/urls/:shortURL', (req, res) => {
 //     let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
 //     res.redirect(templateVar.longURL);
