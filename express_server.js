@@ -14,24 +14,18 @@ function generateRandomString(){
     }
     return randomStr;
 }
-//urlDatabase
-let urlDatabase = {
-    'b2xVn2': 'http://www.lighthouselabs.ca',
-    '9sm5xK': 'http://www.google.ca'
-};
 //userDatabase
 let usersDatabase = {
 
 };
-// app.post('/urls', (req, res) => {
-//    let shUrl = generateRandomString()
-//    urlDatabase[shUrl] = req.body.longURL
-//    res.redirect(`/urls/${shUrl}`);
-// });
+
 app.set('view engine', 'ejs');
 
 app.get('/urls/new', (req, res) => {
-    res.render('urls_new')
+    const templateUrl = {
+        userID: getTemplateUserObj(req)
+    }
+    res.render('urls_new', templateUrl)
 });
 
 /*!!!!!!USER - Authentication Routes!!!!!*/
@@ -42,17 +36,25 @@ const getTemplateUserObj = (req) => {
 
 app.get('/login', (req, res) => {
     let templateUrl = {
-        userID: getTemplateUserObj()
+        userID: getTemplateUserObj(req)
     }
-    res.render('/urls_login', templateUrl)
+    res.render('urls_login', templateUrl)
 });
 
 //Going to make some changes to this post request after. LEave it there for now
-// app.post('/login', (req, res) => {
-//    const name = req.body.username;
-//    res.cookie('username', name);
-//    res.redirect('/urls');
-// });
+app.post('/login', (req, res) => {
+   const email = req.body['email'];
+   const password = req.body['password'];
+   let user = null;
+   for(let id in usersDatabase){
+       console.log(usersDatabase[id].email);
+        if(usersDatabase[id].email === email && usersDatabase[id].password === password){
+            user = usersDatabase[id].userID;
+            res.cookie('userID', user);
+            res.redirect('/urls');
+        }
+   }
+});
 
 //Change it later, because this will work for now
 app.post('/logout', (req, res) => {
@@ -69,26 +71,45 @@ app.get('/register', (req, res) => {
 });
 //After the user clicks the login in the registration page redirects them to the urls page.
 app.post('/register', (req, res) => {
-    const randomId = generateRandomString();
     const email = req.body['email'];
     const password = req.body['password'];
-    usersDatabase[randomId] = {
-        'userID': randomId,
-        'email': email,
-        'password': password
+    for(const id in usersDatabase){
+        if(usersDatabase[id].email === email){
+            res.end('Email is the same trying another email, Thank you');
         }
-    if(email === "" || password === ""){
+    }
+     if(email === "" || password === ""){
         res.end('400 bad request');
     }else{
+    const randomId = generateRandomString();
+    usersDatabase[randomId] = {
+            'userID': randomId,
+            'email': email,
+            'password': password
+            }
     res.cookie('userID', usersDatabase[randomId].userID);
     res.redirect('/urls'); 
+    console.log(usersDatabase)
     }
 });
+
+/*!!!!!!!!!URL - Routings!!!!!!!!!!!*/
+
+//urlDatabase
+let urlDatabase = {
+
+};
 
 //gets the /urls and renders the urls_index.ejs file from views
  app.get('/urls', (req, res) => {
     let templateUrl = {userID: getTemplateUserObj(req), urls: urlDatabase}
     res.render('urls_index', templateUrl); });
+
+app.post('/urls', (req, res) => {
+   let shUrl = generateRandomString()
+   urlDatabase[shUrl] = req.body.longURL
+   res.redirect(`/urls/${shUrl}`);
+});
 
 app.post('/urls/:shortURL/delete', (req, res) => {
     delete urlDatabase[req.params.shortURL];
