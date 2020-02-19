@@ -14,16 +14,15 @@ function generateRandomString(){
     }
     return randomStr;
 }
-
-const urlDatabase = {
+//urlDatabase
+let urlDatabase = {
     'b2xVn2': 'http://www.lighthouselabs.ca',
     '9sm5xK': 'http://www.google.ca'
-}
+};
+//userDatabase
+let usersDatabase = {
 
-const usersDatabase= {
-
-}
-
+};
 // app.post('/urls', (req, res) => {
 //    let shUrl = generateRandomString()
 //    urlDatabase[shUrl] = req.body.longURL
@@ -35,10 +34,8 @@ app.get('/urls/new', (req, res) => {
     res.render('urls_new')
 });
 
-
-
-const getTemplateVars = (req) => 
-req.cookies['username'];
+// const getTemplateVars = (req) => 
+// req.cookies['username'];
 
 //renders the registration page
 app.get('/register', (req, res) => {
@@ -49,18 +46,26 @@ app.post('/register', (req, res) => {
     const randomId = generateRandomString();
     const email = req.body['email'];
     const password = req.body['password'];
-
     usersDatabase[randomId] = {
         'userID': randomId,
         'email': email,
         'password': password
-    }
+        }
+    if(email === "" || password === ""){
+        res.send('400 bad request');
+    }else{
     res.cookie('userID', usersDatabase[randomId].userID);
-    res.redirect('/urls')
+    res.redirect('/urls'); 
+    }
 });
+
+//gets the userId object fucntion 
+const getTemplateUserObj = (req) => {
+   return usersDatabase[req.cookies['userID']];
+}
 //gets the /urls and renders the urls_index.ejs file from views
  app.get('/urls', (req, res) => {
-    let templateUrl = {username: getTemplateVars(req),urls: urlDatabase}
+    let templateUrl = {userID: getTemplateUserObj(req), urls: urlDatabase}
     res.render('urls_index', templateUrl); });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
@@ -81,7 +86,7 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 })
 
 app.get('/urls/:shortURL', (req, res) => {
-    let templateVar = {username: getTemplateVars(req), shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
+    let templateVar = {userID: getTemplateUserObj(req), shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
     res.render('urls_show', templateVar);
 });
 
@@ -93,7 +98,7 @@ app.post('/login', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-    res.clearCookie('username', getTemplateVars(req));
+    res.clearCookie('userID', getTemplateUserObj(req));
     res.redirect('/urls');
 });
 // app.get('/urls/:shortURL', (req, res) => {
