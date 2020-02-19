@@ -20,7 +20,7 @@ const urlDatabase = {
     '9sm5xK': 'http://www.google.ca'
 }
 
-const user = {
+const usersDatabase= {
 
 }
 
@@ -44,10 +44,19 @@ req.cookies['username'];
 app.get('/register', (req, res) => {
     res.render('urls_register');
 });
-
+//After the user clicks the login in the registration page
 app.post('/register', (req, res) => {
     const randomId = generateRandomString();
-    const {email, password} = 
+    const email = req.body['email'];
+    const password = req.body['password'];
+
+    usersDatabase[randomId] = {
+        'userID': randomId,
+        'email': email,
+        'password': password
+    }
+    console.log(usersDatabase);
+
 });
 //gets the /urls and renders the urls_index.ejs file from views
  app.get('/urls', (req, res) => {
