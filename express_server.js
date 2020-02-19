@@ -34,12 +34,38 @@ app.get('/urls/new', (req, res) => {
     res.render('urls_new')
 });
 
-// const getTemplateVars = (req) => 
-// req.cookies['username'];
+/*!!!!!!USER - Authentication Routes!!!!!*/
+//gets the userId object fucntion 
+const getTemplateUserObj = (req) => {
+    return usersDatabase[req.cookies['userID']];
+ }
+
+app.get('/login', (req, res) => {
+    let templateUrl = {
+        userID: getTemplateUserObj()
+    }
+    res.render('/urls_login', templateUrl)
+});
+
+//Going to make some changes to this post request after. LEave it there for now
+// app.post('/login', (req, res) => {
+//    const name = req.body.username;
+//    res.cookie('username', name);
+//    res.redirect('/urls');
+// });
+
+//Change it later, because this will work for now
+app.post('/logout', (req, res) => {
+    res.clearCookie('userID', getTemplateUserObj(req));
+    res.redirect('/login');
+});
 
 //renders the registration page
 app.get('/register', (req, res) => {
-    res.render('urls_register');
+    let templateUrl = {
+        userID: getTemplateUserObj(req)
+    }
+    res.render('urls_register', templateUrl);
 });
 //After the user clicks the login in the registration page redirects them to the urls page.
 app.post('/register', (req, res) => {
@@ -52,17 +78,13 @@ app.post('/register', (req, res) => {
         'password': password
         }
     if(email === "" || password === ""){
-        res.send('400 bad request');
+        res.end('400 bad request');
     }else{
     res.cookie('userID', usersDatabase[randomId].userID);
     res.redirect('/urls'); 
     }
 });
 
-//gets the userId object fucntion 
-const getTemplateUserObj = (req) => {
-   return usersDatabase[req.cookies['userID']];
-}
 //gets the /urls and renders the urls_index.ejs file from views
  app.get('/urls', (req, res) => {
     let templateUrl = {userID: getTemplateUserObj(req), urls: urlDatabase}
@@ -86,21 +108,10 @@ app.post('/urls/:shortURL/edit', (req, res) => {
 })
 
 app.get('/urls/:shortURL', (req, res) => {
-    let templateVar = {userID: getTemplateUserObj(req), shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
-    res.render('urls_show', templateVar);
+    let templateUrl = {userID: getTemplateUserObj(req), shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
+    res.render('urls_show', templateUrl);
 });
 
-
-app.post('/login', (req, res) => {
-   const name = req.body.username;
-   res.cookie('username', name);
-   res.redirect('/urls');
-});
-
-app.post('/logout', (req, res) => {
-    res.clearCookie('userID', getTemplateUserObj(req));
-    res.redirect('/urls');
-});
 // app.get('/urls/:shortURL', (req, res) => {
 //     let templateVar = {shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL]}
 //     res.redirect(templateVar.longURL);
@@ -109,24 +120,3 @@ app.post('/logout', (req, res) => {
 app.listen(PORT, () => {
     console.log(`App is listening on port: ${PORT}`);
 });
-
-// app.get('/', (req, res) => {
-//     res.send('Hello!');
-// });
-
-// app.get('/urls.json', (req, res) => {
-//     res.send(urlDatabase);
-// });
-
-// app.get('/hello', (req, res) => {
-//     res.send('<html><body>Hello <b>World</b></body></html>\n');
-// });
-
-// app.get('/set', (req, res) => {
-//     const a = 1
-//     res.send(`Assigning a variable \'a\'  which contains the number 1 in this path: ${a}`);
-// });
-
-// app.get('/fetch', (req, res) => {
-//     res.send(`fetching some stuff from \'\set\' path: ${a}`);
-// });

@@ -1,15 +1,19 @@
 <html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TinyApp</title>
-</head>
-
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+            integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TinyApp</title>
+    </head>
 <body>
     <header>
-    </header>
+        <%- include('./partials/_header') %> 
+    </header><br><br>
 <h3>Create Account</h3>
+<br>
+<br>
 <form method="POST" action="/register">
 <h5>Email Address</h5>
 <input type="email" name="email">
@@ -20,7 +24,7 @@
 <br>
 <br>
 <br>
-<button class="btn btn-outline-primary">Login</button>
+<button class="btn btn-outline-primary">Register</button>
 </form>
 
 </body>

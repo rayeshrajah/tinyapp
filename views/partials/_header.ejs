@@ -10,16 +10,16 @@
                 <a class="nav-item nav-link" href="/urls">My URLs</a>
                 <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
             <div style="position: absolute; right: 0px;">
-            <%if(userID['email']){%>
+            <%if(userID){%>
             <form method="POST" action="/logout">
-                Logged in as:<%= userID['email']%>
+                Logged in as: <%= userID['email']%>
                 <button type="submit" class="btn btn-outline-dark">Logout</button>
             </form>
             <%} else{%>
-            <form method="POST" action="/login">
+            <form method="GET" action="/login" style="display: inline;">
                 <button type="submit" class="btn btn-outline-dark">Login</button>
             </form>
-            <form method="POST" action="/register">
+            <form method="GET" action="/register" style="display: inline;">
             <button type="submit" class="btn btn-outline-dark">Register</button>
             </form>
             <%}%> 
