@@ -6,6 +6,8 @@ const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 app.use(body.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
+const bcrypt = require('bcrypt');
+let hashedPassword = "";
 
 function generateRandomString() {
   let randomStr = "";
@@ -91,7 +93,7 @@ app.post("/login", (req, res) => {
     console.log(usersDatabase[id].email);
     if (
       usersDatabase[id].email === email &&
-      usersDatabase[id].password === password
+      bcrypt.compareSync(password, hashedPassword)
     ) {
       user = usersDatabase[id].userID;
       res.cookie("userID", user);
@@ -117,6 +119,7 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body["email"];
   const password = req.body["password"];
+   hashedPassword = bcrypt.hashSync(password, 10);
   for (const id in usersDatabase) {
     if (usersDatabase[id].email === email) {
       res.end("Email is the same trying another email, Thank you");
@@ -129,7 +132,7 @@ app.post("/register", (req, res) => {
     usersDatabase[randomId] = {
       userID: randomId,
       email: email,
-      password: password
+      password: hashedPassword
     };
     res.cookie("userID", usersDatabase[randomId].userID);
     res.redirect("/urls");
