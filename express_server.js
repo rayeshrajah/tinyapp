@@ -19,7 +19,17 @@ app.use(cookieSession({
 
 //Databases that are changeable.
 let urlDatabase = {};
-let usersDatabase = {};
+let usersDatabase = {
+  "userRandomID": {
+  id: "userRandomID", 
+  email: "user@example.com", 
+  password: "purple-monkey-dinosaur"
+},
+"user2RandomID": {
+  id: "user2RandomID", 
+  email: "user2@example.com", 
+  password: "dishwasher-funk"
+}};
 
 /*!!!!!!USER - Authentication Routes!!!!!*/
 //gets the userId object fucntion
@@ -29,7 +39,6 @@ app.get("/login", (req, res) => {
   };
   res.render("urls_login", templateUrl);
 });
-
 //log's in if the user is registered.
 app.post("/login", (req, res) => {
   const email = req.body["email"];
