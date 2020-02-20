@@ -17,16 +17,12 @@ app.use(cookieSession({
   maxAge: 1000 * 60 * 60 * 24 // 24 hours in miliseconds
 }));
 
-//userDatabase
-let urlDatabase = {
-    b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
-    i3BoGr: { longURL: "https://www.google.ca", userID: "aJ48lW" }
-  };
+//Databases that are changeable.
+let urlDatabase = {};
 let usersDatabase = {};
 
 /*!!!!!!USER - Authentication Routes!!!!!*/
 //gets the userId object fucntion
-
 app.get("/login", (req, res) => {
   let templateUrl = {
     userID: helper.getTemplateUserObjId(req, usersDatabase)
@@ -34,28 +30,31 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateUrl);
 });
 
-//Going to make some changes to this post request after. LEave it there for now
+//log's in if the user is registered.
 app.post("/login", (req, res) => {
   const email = req.body["email"];
   const password = req.body["password"];
   let user = null;
   for (let id in usersDatabase) {
-    console.log(usersDatabase[id].email);
     if (
-      usersDatabase[id].email === email &&
-      bcrypt.compareSync(password, hashedPassword)
+      usersDatabase[id]['email'] === email &&
+      bcrypt.compareSync(password, usersDatabase[id]['password'])
     ) {
       user = usersDatabase[id].userID;
       req.session.userID =  user;
       res.redirect("/urls");
+    }else{
+      let templateUrl = {
+        userID: helper.getTemplateUserObjId(req, usersDatabase)
+      };
+      res.render('url_failed_login', templateUrl);
     }
   }
 });
 
-//Change it later, because this will work for now
+//Logout Route
 app.post("/logout", (req, res) => {
   delete req.session.userID;
-  //res.clearCookie("userID", getTemplateUserObj(req));
   res.redirect("/login");
 });
 
@@ -69,23 +68,20 @@ app.get("/register", (req, res) => {
 //After the user clicks the login in the registration page redirects them to the urls page.
 app.post("/register", (req, res) => {
   const email = req.body["email"];
-  const password = req.body["password"];
-   hashedPassword = bcrypt.hashSync(password, 10);
-  for (const id in usersDatabase) {
-    if (usersDatabase[id].email === email) {
-      res.end("Email is the same trying another email, Thank you");
-    }
-  }
-  if (email === "" || password === "") {
+   hashedPassword = bcrypt.hashSync(req.body["password"], 10);
+  if(helper.getUserEmail(req, usersDatabase)){
+    res.end("Email is the same trying another email, Thank you");
+  }else if (email === "" || hashedPassword === "") {
     res.end("400 bad request");
   } else {
     const randomId = helper.generateRandomString();
     req.session.userID = randomId;
-    usersDatabase[randomId] = {
+    usersDatabase[req.session.userID] = {
       userID: req.session.userID,
       email: email,
       password: hashedPassword
     };
+    console.log(usersDatabase);
     res.redirect("/urls")
   }
 });
@@ -108,8 +104,7 @@ app.get("/urls", (req, res) => {
   if (!helper.getTemplateUserObjId(req, usersDatabase)) {
     res.redirect("/login");
   } else {
-   const templateUrl = {userID: helper.getTemplateUserObjId(req, usersDatabase), urls: helper.userUrlDatabase(req, urlDatabase, usersDatabase)}
-    console.log('template url object --->', templateUrl)
+   const templateUrl = {userID: helper.getTemplateUserObjId(req, usersDatabase), urls: helper.userUrlDatabase(req, urlDatabase, usersDatabase)};
     res.render("urls_index", templateUrl);
   }
 });
