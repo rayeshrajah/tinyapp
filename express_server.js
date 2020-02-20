@@ -1,47 +1,22 @@
 const express = require("express");
+const helper = require('./helperFunctions');
 const app = express();
 const PORT = 8080;
 const body = require("body-parser");
 const cookieParser = require("cookie-parser");
+var cookieSession = require('cookie-session')
 app.use(cookieParser());
 app.use(body.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 const bcrypt = require('bcrypt');
 let hashedPassword = "";
 
-function generateRandomString() {
-  let randomStr = "";
-  let arrayCharsAndNums = [
-    "A",
-    "B",
-    "C",
-    "D",
-    "E",
-    "F",
-    "G",
-    "H",
-    "a",
-    "b",
-    "c",
-    "d",
-    "e",
-    "f",
-    "1",
-    "2",
-    "3",
-    "4",
-    "5",
-    "6",
-    "7"
-  ];
-  for (let i = 0; i < 6; i++) {
-    randomStr +=
-      arrayCharsAndNums[
-        Math.floor(Math.random() * (arrayCharsAndNums.length - 1))
-      ];
-  }
-  return randomStr;
-}
+app.use(cookieSession({
+  name: 'session',
+  keys: ['donna haraway', 'medusa', 'plastic shoes', 'unbreakable!'],
+  maxAge: 1000 * 60 * 60 * 24 // 24 hours in miliseconds
+}));
+
 //userDatabase
 let urlDatabase = {
     b6UTxQ: { longURL: "https://www.tsn.ca", userID: "aJ48lW" },
@@ -49,37 +24,12 @@ let urlDatabase = {
   };
 let usersDatabase = {};
 
-const userUrlDatabase = function(req, database) {
-  let userUrlObject = {};
-  for (let url in database) {
-      console.log(url);
-    if (database[url].userID === getTemplateUserObj(req).userID) {
-      userUrlObject[url] = {
-          longUrl:database[url].longUrl,
-          userID: getTemplateUserObj(req).userID
-        }
-      }
-    }
-  return userUrlObject
-};
-
-const checkForUser = function(req, database){
-    for(let url in database){
-    if (database[url].userID === getTemplateUserObj(req).userID){
-        return true;
-        }
-    }
-}
-
 /*!!!!!!USER - Authentication Routes!!!!!*/
 //gets the userId object fucntion
-const getTemplateUserObj = req => {
-  return usersDatabase[req.cookies["userID"]];
-};
 
 app.get("/login", (req, res) => {
   let templateUrl = {
-    userID: getTemplateUserObj(req)
+    userID: helper.getTemplateUserObjId(req, usersDatabase)
   };
   res.render("urls_login", templateUrl);
 });
@@ -96,7 +46,7 @@ app.post("/login", (req, res) => {
       bcrypt.compareSync(password, hashedPassword)
     ) {
       user = usersDatabase[id].userID;
-      res.cookie("userID", user);
+      req.session.userID =  user;
       res.redirect("/urls");
     }
   }
@@ -104,14 +54,15 @@ app.post("/login", (req, res) => {
 
 //Change it later, because this will work for now
 app.post("/logout", (req, res) => {
-  res.clearCookie("userID", getTemplateUserObj(req));
+  delete req.session.userID;
+  //res.clearCookie("userID", getTemplateUserObj(req));
   res.redirect("/login");
 });
 
 //renders the registration page
 app.get("/register", (req, res) => {
   let templateUrl = {
-    userID: getTemplateUserObj(req)
+    userID: helper.getTemplateUserObjId(req, usersDatabase)
   };
   res.render("urls_register", templateUrl);
 });
@@ -128,24 +79,22 @@ app.post("/register", (req, res) => {
   if (email === "" || password === "") {
     res.end("400 bad request");
   } else {
-    const randomId = generateRandomString();
+    const randomId = helper.generateRandomString();
+    req.session.userID = randomId;
     usersDatabase[randomId] = {
-      userID: randomId,
+      userID: req.session.userID,
       email: email,
       password: hashedPassword
     };
-    res.cookie("userID", usersDatabase[randomId].userID);
-    res.redirect("/urls");
-    console.log(usersDatabase);
+    res.redirect("/urls")
   }
 });
 
 /*!!!!!!!!!URL - Routings!!!!!!!!!!!*/
 
-
 app.get("/urls/new", (req, res) => {
   const templateUrl = {
-    userID: getTemplateUserObj(req)
+    userID: helper.getTemplateUserObjId(req, usersDatabase)
   };
   if (templateUrl.userID === undefined) {
     res.redirect("/login");
@@ -156,27 +105,27 @@ app.get("/urls/new", (req, res) => {
 
 //gets the /urls and renders the urls_index.ejs file from views
 app.get("/urls", (req, res) => {
-  if (!getTemplateUserObj(req)) {
+  if (!helper.getTemplateUserObjId(req, usersDatabase)) {
     res.redirect("/login");
   } else {
-   const templateUrl = {userID: getTemplateUserObj(req), urls: userUrlDatabase(req, urlDatabase)}
+   const templateUrl = {userID: helper.getTemplateUserObjId(req, usersDatabase), urls: helper.userUrlDatabase(req, urlDatabase, usersDatabase)}
     console.log('template url object --->', templateUrl)
     res.render("urls_index", templateUrl);
   }
 });
 
 app.post("/urls", (req, res) => {
-  let shUrl = generateRandomString();
+  let shUrl = helper.generateRandomString();
   urlDatabase[shUrl] = {
     longUrl: req.body.longURL,
-    userID: getTemplateUserObj(req).userID
+    userID: helper.getTemplateUserObjId(req, usersDatabase)['userID']
   };
   console.log(urlDatabase);
   res.redirect(`/urls/${shUrl}`);
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
-  if(checkForUser(req, urlDatabase)){
+  if(helper.checkForUser(req, urlDatabase, usersDatabase)){
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
   }
@@ -188,7 +137,7 @@ app.post("/urls/:shortURL/pageEdit", (req, res) => {
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => {
-  if(checkForUser(req,urlDatabase)){
+  if(helper.checkForUser(req, urlDatabase, usersDatabase)){
   const shrtURL = req.params.shortURL;
   const newLongURL = req.body[shrtURL];
   urlDatabase[shrtURL]['longUrl'] = newLongURL;
@@ -197,8 +146,8 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  let templateUrl = {
-    userID: getTemplateUserObj(req),
+  let templateUrl = { 
+    userID: helper.getTemplateUserObjId(req, usersDatabase),
     shortURL: req.params.shortURL,
     longURL: urlDatabase[req.params.shortURL].longUrl
   };
