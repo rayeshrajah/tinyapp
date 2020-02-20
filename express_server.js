@@ -47,20 +47,27 @@ let urlDatabase = {
   };
 let usersDatabase = {};
 
-const urlForUsers = function(req, database) {
-
+const userUrlDatabase = function(req, database) {
   let userUrlObject = {};
   for (let url in database) {
       console.log(url);
     if (database[url].userID === getTemplateUserObj(req).userID) {
       userUrlObject[url] = {
-          longUrl:database[url].longURL,
+          longUrl:database[url].longUrl,
           userID: getTemplateUserObj(req).userID
         }
       }
     }
   return userUrlObject
 };
+
+const checkForUser = function(req, database){
+    for(let url in database){
+    if (database[url].userID === getTemplateUserObj(req).userID){
+        return true;
+        }
+    }
+}
 
 /*!!!!!!USER - Authentication Routes!!!!!*/
 //gets the userId object fucntion
@@ -149,7 +156,7 @@ app.get("/urls", (req, res) => {
   if (!getTemplateUserObj(req)) {
     res.redirect("/login");
   } else {
-   const templateUrl = {userID: getTemplateUserObj(req), urls: urlForUsers(req, urlDatabase)}
+   const templateUrl = {userID: getTemplateUserObj(req), urls: userUrlDatabase(req, urlDatabase)}
     console.log('template url object --->', templateUrl)
     res.render("urls_index", templateUrl);
   }
@@ -166,8 +173,10 @@ app.post("/urls", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  if(checkForUser(req, urlDatabase)){
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
+  }
 });
 //Bring you to the correct editing Url page dpending on which one you want to edit.
 app.post("/urls/:shortURL/pageEdit", (req, res) => {
@@ -176,10 +185,12 @@ app.post("/urls/:shortURL/pageEdit", (req, res) => {
 });
 
 app.post("/urls/:shortURL/edit", (req, res) => {
+  if(checkForUser(req,urlDatabase)){
   const shrtURL = req.params.shortURL;
   const newLongURL = req.body[shrtURL];
-  urlDatabase[shrtURL] = newLongURL;
+  urlDatabase[shrtURL]['longUrl'] = newLongURL;
   res.redirect(`/urls`);
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
