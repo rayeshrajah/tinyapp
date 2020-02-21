@@ -53,13 +53,11 @@ app.post("/login", (req, res) => {
       user = usersDatabase[id].userID;
       req.session.userID =  user;
       res.redirect("/urls");
-    }else{
-      let templateUrl = {
-        userID: helper.getTemplateUserObjId(req, usersDatabase)
-      };
-      res.render('url_failed_login', templateUrl);
-    }
+    }else if(usersDatabase[id]['email'] === email &&
+  !bcrypt.compareSync(password, usersDatabase[id]['password'])){
+    res.redirect('/login');
   }
+}
 });
 
 //Logout Route
@@ -80,9 +78,9 @@ app.post("/register", (req, res) => {
   const email = req.body["email"];
    hashedPassword = bcrypt.hashSync(req.body["password"], 10);
   if(helper.getUserEmail(req, usersDatabase)){
-    res.end("Email is the same trying another email, Thank you");
+    res.send("Email is the same trying another email, Thank you");
   }else if (email === "" || hashedPassword === "") {
-    res.end("400 bad request");
+    res.send("400 bad request");
   } else {
     const randomId = helper.generateRandomString();
     req.session.userID = randomId;
