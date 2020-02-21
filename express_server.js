@@ -11,9 +11,10 @@ app.set("view engine", "ejs");
 const bcrypt = require('bcrypt');
 let hashedPassword = "";
 
+//used for cookies session
 app.use(cookieSession({
   name: 'session',
-  keys: ['donna haraway', 'medusa', 'plastic shoes', 'unbreakable!'],
+  keys: ['cup', 'wine', 'glasses', 'telephone', 'headphones', 'cables'],
   maxAge: 1000 * 60 * 60 * 24 // 24 hours in miliseconds
 }));
 
@@ -90,13 +91,20 @@ app.post("/register", (req, res) => {
       email: email,
       password: hashedPassword
     };
-    console.log(usersDatabase);
     res.redirect("/urls")
   }
 });
 
 /*!!!!!!!!!URL - Routings!!!!!!!!!!!*/
-
+//get the get request for / and redirects the user depending if hes logged in or not.
+app.get("/", (req, res) => {
+  if(helper.getTemplateUserObjId(req, usersDatabase)){
+    res.redirect('/urls');
+  }else{
+    res.redirect('/login');
+  }
+})
+//renders the page with the new urls
 app.get("/urls/new", (req, res) => {
   const templateUrl = {
     userID: helper.getTemplateUserObjId(req, usersDatabase)
@@ -117,14 +125,13 @@ app.get("/urls", (req, res) => {
     res.render("urls_index", templateUrl);
   }
 });
-
+//
 app.post("/urls", (req, res) => {
   let shUrl = helper.generateRandomString();
   urlDatabase[shUrl] = {
     longUrl: req.body.longURL,
     userID: helper.getTemplateUserObjId(req, usersDatabase)['userID']
   };
-  console.log(urlDatabase);
   res.redirect(`/urls/${shUrl}`);
 });
 
@@ -156,6 +163,13 @@ app.get("/urls/:shortURL", (req, res) => {
     longURL: urlDatabase[req.params.shortURL].longUrl
   };
   res.render("urls_show", templateUrl);
+});
+
+app.get('/u/:shortURL', (req, res) => {
+  let templateVar = {shortURL: req.params.shortURL, 
+                     longURL: urlDatabase[req.params.shortURL].longUrl, 
+                     userID: helper.getTemplateUserObjId(req, usersDatabase)}
+  res.redirect(templateVar.longURL);
 });
 
 app.listen(PORT, () => {

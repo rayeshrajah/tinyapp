@@ -38,7 +38,6 @@ function generateRandomString() {
   const userUrlDatabase = function(req, database, database2) {
     let userUrlObject = {};
     for (let url in database) {
-        console.log(url);
       if (database[url].userID === getTemplateUserObjId(req, database2)['userID']) {
         userUrlObject[url] = {
             longUrl:database[url].longUrl,
