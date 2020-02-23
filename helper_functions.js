@@ -32,7 +32,7 @@ function generateRandomString() {
           Math.floor(Math.random() * (arrayCharsAndNums.length - 1))
         ];
     }
-    return randomStr;
+    return randomStr; 
   }
   //gives an url object of specific user who is logged and the urls a visible to that user only
   const userUrlDatabase = function(req, database, database2) {
@@ -58,6 +58,7 @@ const checkForUser = function(req, database, database2){
         return true;
         }
     }
+    return false;
 }
 //Boolean whether the email registered and email loggin is the same.
 const getUserEmail = (req, database) => {
@@ -65,8 +66,7 @@ const getUserEmail = (req, database) => {
         if(database[id].email === req.body['email']){
         return true;
         }
-    return false;
-    }
+    }return false;
 }
 
 //Exporting functions.
